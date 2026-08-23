@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.user import UserCreate
-from app.core.security import hash_password
+from app.schemas.user import UserCreate, UserLogin
+from app.core.security import hash_password, verify_password
 
 def register_user(db: Session, user_data: UserCreate):
     existing_user = db.query(User).filter(User.email == user_data.email).first()
@@ -19,3 +19,15 @@ def register_user(db: Session, user_data: UserCreate):
     db.refresh(new_user)
 
     return new_user
+
+
+def login_user(db: Session, user_data: UserLogin):
+    user = db.query(User).filter(User.email == user_data.email).first()
+
+    if user is None:
+        return None
+
+    if not verify_password(user_data.password, user.password_hash):
+        return None
+
+    return user
