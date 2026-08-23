@@ -2,8 +2,6 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "Research Group Management API"
-    ENVIRONMENT: str = "development"
 
     DATABASE_URL: str
 

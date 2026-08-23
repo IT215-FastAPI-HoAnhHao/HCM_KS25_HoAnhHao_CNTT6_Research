@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.research_project import ResearchProject, ResearchMember
 from app.models.research_task import ResearchTask
 from app.routers.health import router as health_router
+from app.routers.auth import router as auth_router
 from app.core.exceptions import register_exception_handlers
 
 # Tạo các bảng trong database
@@ -20,7 +21,7 @@ register_exception_handlers(app)
 
 # Đăng ký router
 app.include_router(health_router)
-
+app.include_router(auth_router)
 
 @app.get("/")
 def root():

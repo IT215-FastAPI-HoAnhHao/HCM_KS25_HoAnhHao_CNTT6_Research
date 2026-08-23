@@ -12,3 +12,5 @@ def health_check():
         "success": True,
         "status": "ok"
     }
+
+

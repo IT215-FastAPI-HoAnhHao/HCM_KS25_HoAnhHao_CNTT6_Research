@@ -11,10 +11,14 @@ class ResearchTask(Base):
     __tablename__ = "research_tasks"
 
     id = Column(Integer, primary_key=True, index=True)
+
     project_id = Column(Integer, ForeignKey("research_project.id", ondelete="CASCADE"), nullable=False, index=True)
+
     title = Column(String(255), nullable=False, index=True)
     description = Column(Text, nullable=True)
+
     assignee_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    
     status = Column(String(20), default="TODO", nullable=False)
     priority = Column(String(20), default="MEDIUM", nullable=False)
     due_data = Column(DateTime(timezone=True), nullable=True)

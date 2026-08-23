@@ -11,12 +11,13 @@ class ResearchProject(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
     # Người sở hữu project
-    owner = relationship("User", back_populates="owend_projects", foreign_keys=[owner_id])
+    owner = relationship("User", back_populates="owned_projects", foreign_keys=[owner_id])
 
     # DAnh sách thành viên trong project
     members = relationship("ResearchMember", back_populates="project", cascade="all, delete-orphan")
@@ -27,7 +28,7 @@ class ResearchProject(Base):
 
 
 class ResearchMember(Base):
-    __tablename__  = "research_menbers"
+    __tablename__  = "research_members"
 
     __table_args__ = (UniqueConstraint("project_id", "user_id", name="up_research_member_project_user"),)
 
