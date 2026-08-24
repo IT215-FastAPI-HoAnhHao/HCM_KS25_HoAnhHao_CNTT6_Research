@@ -24,6 +24,9 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email hoặc mật khẩu không hợp lệ")
 
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tài khoản không hoạt động")
+
     access_token = create_access_token(data={"sub": str(user.id)})
 
     return {
