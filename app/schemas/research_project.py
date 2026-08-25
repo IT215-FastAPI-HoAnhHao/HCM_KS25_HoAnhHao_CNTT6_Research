@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class ResearchProjectBase(BaseModel):
@@ -46,3 +46,5 @@ class ResearchMemberResponse(ResearchMemberBase):
 
     class Config:
         from_attributes = True
+
+
