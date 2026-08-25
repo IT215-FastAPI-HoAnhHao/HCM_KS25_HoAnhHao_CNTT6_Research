@@ -118,6 +118,55 @@ def add_research_member(project_id: int, member_data: ResearchMemberCreate, owne
     return new_member
 
 
+def update_research_member(project_id: int, user_id: int, member_data: ResearchMemberUpdate, owner_id: int, db: Session):
+    project = db.query(ResearchProject).filter(ResearchProject.id == project_id).first()
+
+    if project is None:
+        return None
+
+    if project.owner_id != owner_id:
+        return "FORBIDDEN"
+
+    member = db.query(ResearchMember).filter(ResearchMember.project_id == project_id, ResearchMember.user_id == user_id).first()
+
+    if member is None:
+        return "MEMBER_NOT_FOUND"
+
+    if member.role == "OWNER":
+        return "CANNOT_UPDATE_OWNER"
+
+    if member_data.role is not None:
+        member.role = member_data.role
+
+    db.commit()
+    db.refresh(member)
+
+    return member
+
+def delete_research_member(project_id: int, user_id: int, owner_id: int, db: Session):
+
+    project = db.query(ResearchProject).filter(ResearchProject.id == project_id).first()
+
+    if project is None:
+        return None
+
+    if project.owner_id != owner_id:
+        return "FORBIDDEN"
+
+    member = db.query(ResearchMember).filter(ResearchMember.project_id == project_id, ResearchMember.user_id == user_id).first()
+
+    if member is None:
+        return "MEMBER_NOT_FOUND"
+
+    if member.role == "OWNER":
+        return "CANNOT_DELETE_OWNER"
+
+    db.delete(member)
+    db.commit()
+
+    return True
+
+
 def get_research_members(project_id: int, user_id: int, db: Session):
     project = db.query(ResearchProject).filter(ResearchProject.id == project_id).first()
 

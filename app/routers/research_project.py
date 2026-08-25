@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
-from app.schemas.research_project import ResearchMemberCreate, ResearchMemberResponse, ResearchProjectCreate, ResearchProjectResponse
-from app.services.research_project_service import add_research_member, create_research_project, get_research_projects, get_research_project, update_research_project, delete_research_project, get_research_members
+from app.schemas.research_project import ResearchMemberCreate, ResearchMemberResponse, ResearchProjectCreate, ResearchProjectResponse, ResearchMemberUpdate, ResearchProjectUpdate
+from app.services.research_project_service import add_research_member, create_research_project, get_research_projects, get_research_project, update_research_project, delete_research_project, get_research_members, update_research_member, delete_research_member
 
 
 
@@ -109,6 +109,62 @@ def add_member(project_id: int, member_data: ResearchMemberCreate, db: Session =
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Người dùng đã là thành viên")
 
     return member
+
+
+
+
+
+@router.patch("/{project_id}/members/{user_id}", response_model=ResearchMemberResponse)
+def update_member(project_id: int, user_id: int, member_data: ResearchMemberUpdate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
+
+    member = update_research_member(
+        project_id=project_id,
+        user_id=user_id,
+        member_data=member_data,
+        owner_id=current_user.id,
+        db=db
+    )
+
+    if member is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research project not found")
+
+    if member == "FORBIDDEN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only owner can update members")
+
+    if member == "MEMBER_NOT_FOUND":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research member not found")
+
+    if member == "CANNOT_UPDATE_OWNER":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot update owner role")
+
+    return member
+
+
+@router.delete("/{project_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_member(project_id: int,user_id: int,db: Session = Depends(get_db),current_user: User = Depends(get_current_user)
+):
+
+    result = delete_research_member(
+        project_id=project_id,
+        user_id=user_id,
+        owner_id=current_user.id,
+        db=db
+    )
+
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Research project not found")
+
+    if result == "FORBIDDEN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only owner can delete members")
+
+    if result == "MEMBER_NOT_FOUND":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Research member not found")
+
+    if result == "CANNOT_DELETE_OWNER":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Cannot delete project owner")
+
+
 
 
 @router.get("/{project_id}/members", response_model=list[ResearchMemberResponse])
