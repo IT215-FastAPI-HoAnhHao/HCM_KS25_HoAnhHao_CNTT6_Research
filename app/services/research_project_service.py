@@ -116,3 +116,18 @@ def add_research_member(project_id: int, member_data: ResearchMemberCreate, owne
     db.refresh(new_member)
 
     return new_member
+
+
+def get_research_members(project_id: int, user_id: int, db: Session):
+    project = db.query(ResearchProject).filter(ResearchProject.id == project_id).first()
+
+    if project is None:
+        return None
+
+    current_member = db.query(ResearchMember).filter(ResearchMember.project_id == project_id, ResearchMember.user_id == user_id).first()
+
+    if current_member is None:
+        return "FORBIDDEN"
+    members = db.query(ResearchMember).filter(ResearchMember.project_id == project_id).all()
+
+    return members

@@ -7,7 +7,8 @@ from app.db.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.schemas.research_project import ResearchMemberCreate, ResearchMemberResponse, ResearchProjectCreate, ResearchProjectResponse
-from app.services.research_project_service import add_research_member, create_research_project, get_research_projects, get_research_project, update_research_project, delete_research_project
+from app.services.research_project_service import add_research_member, create_research_project, get_research_projects, get_research_project, update_research_project, delete_research_project, get_research_members
+
 
 
 router = APIRouter(prefix="/research-projects", tags=["Researcg Projects"])
@@ -108,3 +109,20 @@ def add_member(project_id: int, member_data: ResearchMemberCreate, db: Session =
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Người dùng đã là thành viên")
 
     return member
+
+
+@router.get("/{project_id}/members", response_model=list[ResearchMemberResponse])
+def get_members(project_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    members = get_research_members(
+        project_id=project_id,
+        user_id=current_user.id,
+        db=db
+    )
+
+    if members is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy dự án nghiên cứu")
+
+    if members == "FORBIDDEN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Chỉ các thành viên dự án mới có thể xem danh sách thành viên.")
+
+    return members
